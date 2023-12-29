@@ -1,12 +1,17 @@
+require("dotenv").config();
+import "./db"
+import "./models/Video";
 import express from "express";
 import morgan from "morgan";
-import globalRouter from "./routers/globalRouter";
+import session from "express-session";
+import MongoStore from "connect-mongo";
+import rootRouter from "./routers/rootRouter";
 import userRouter from "./routers/userRouter";
 import videoRouter from "./routers/videoRouter";
+import { localsMiddleware } from "./middlewares";
 
 
 
-const PORT = 4000;
 
 // app create
 const app = express();
@@ -24,12 +29,42 @@ app.set("views", process.cwd() + "/src/views");
 app.use(logger);
 app.use(express.urlencoded({extended: true}));
 
+// 세션은 Route 전에
+app.use(session(
+    {
+        secret: process.env.COOKIE_SECRET,
+        resave: false,
+        saveUninitialized: false,
+        cookie: 
+        {
+            maxAge: 20000,
+        },
+        store: MongoStore.create({mongoUrl: process.env.DB_URL})
+    }
+));
+
+app.use((req, res, next) =>
+{
+    req.sessionStore.all((error, sessions) =>
+    { 
+        console.log(sessions);
+        next();
+    })
+})
+
+app.get("/add-one", (req, res, next) =>
+{
+    req.session.potato += 1;
+    return res.send(`${req.session.id}\n${req.session.potato}`);
+});
+
 // 경로에 올 시 라우터 실행
-app.use("/", globalRouter);
+app.use(localsMiddleware);
+app.use("/", rootRouter);
 app.use("/videos", videoRouter);
 app.use("/user", userRouter);
 
-
+export default app;
 
 // const gossipMiddleware = (req, res, next) =>
 // {
@@ -93,7 +128,4 @@ app.use("/user", userRouter);
 // app.get("/login", methodLogger, routerLogger, login);
 // app.get("/protected", handleProtected);
 
- const handleListening = () => console.log(`http://localhost:${PORT}`);
-
-app.listen(PORT, handleListening);
 
