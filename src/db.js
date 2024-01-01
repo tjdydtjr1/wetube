@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 
 // mongodb://127.0.0.1:27017/DB이름
 mongoose.connect(process.env.DB_URL);
-
+  
 // mongoDB 연결
 const db = mongoose.connection;
 

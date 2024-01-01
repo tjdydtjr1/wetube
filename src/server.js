@@ -62,7 +62,7 @@ app.get("/add-one", (req, res, next) =>
 app.use(localsMiddleware);
 app.use("/", rootRouter);
 app.use("/videos", videoRouter);
-app.use("/user", userRouter);
+app.use("/users", userRouter);
 
 export default app;
 
