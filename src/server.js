@@ -52,15 +52,12 @@ app.use((req, res, next) =>
     })
 })
 
-app.get("/add-one", (req, res, next) =>
-{
-    req.session.potato += 1;
-    return res.send(`${req.session.id}\n${req.session.potato}`);
-});
 
 // 경로에 올 시 라우터 실행
 app.use(localsMiddleware);
 app.use("/", rootRouter);
+app.use("/uploads", express.static("uploads"));
+app.use("/assets", express.static("assets"));
 app.use("/videos", videoRouter);
 app.use("/users", userRouter);
 

@@ -12,14 +12,15 @@ const userSchema = new mongoose.Schema
         email: {type: String, required: true, unique: true},
         username: {type: String, required: true, unique: true},
         password: {type: String},
-        location: String
+        location: String,
+        videos: [{type: mongoose.Schema.Types.ObjectId, ref: "Video"}]
     }
 );
 
 userSchema.pre("save", async function()
 {
     console.log("hash start");
-    if(this.password)
+    if(this.isModified("password"))
     {
         this.password = await bcrypt.hash(this.password, 5);
     }

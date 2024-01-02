@@ -1,4 +1,5 @@
 import User from "../models/User"
+import Video from "../models/Video"
 import fetch from "node-fetch";
 import bcrypt from "bcrypt";
 
@@ -59,7 +60,6 @@ export const postLogin = async (req, res) =>
 {
     const {username, password} = req.body;
     const user = await User.findOne({username:username, socialOnly: false});
-    const ok = await bcrypt.compare(password, user.password);
   
     if(!user)
     {
@@ -69,19 +69,23 @@ export const postLogin = async (req, res) =>
             errorMessage: "An account with this username does not exists."
         });
     }
-    
-    if(!ok)
+    else
     {
-        return res.status(400).render("login", 
+        const ok = await bcrypt.compare(password, user.password);
+        if(!ok)
         {
-            pageTitle: "Login", 
-            errorMessage: "Wrong password"
-        });
+            return res.status(400).render("login", 
+            {
+                pageTitle: "Login", 
+                errorMessage: "Wrong password"
+            });
+        }
+        req.session.loggedIn = true;
+        req.session.user = user;
+    
+        return res.redirect("/");
     }
-    req.session.loggedIn = true;
-    req.session.user = user;
-
-    return res.redirect("/");
+    
 }
 
 export const startGithubLogin = (req, res) =>
@@ -208,8 +212,6 @@ export const finishGithubLogin = async (req, res) =>
     {
         return res.redirect("/login");
     }
-
-    res.send(JSON.stringify(json));
 }
 
 export const logout = (req, res) =>
@@ -225,10 +227,17 @@ export const getEdit = (req, res) =>
 
 export const postEdit = async (req, res) =>
 {
-    const {session: {user: {_id}}} = req;
-    const {name, email, username, location} = req.body;
-    const updateedUser = await User.findByIdAndUpdate(_id, 
+    const {session: {user: {_id, avatarUrl}}} = req;
+    const {name, email, username, location, } = req.body;
+    
+    // 미들웨어에서 multer 거치면 req.file 생성됨
+    const {file} = req;
+    const updatedUser = await User.findByIdAndUpdate
+    (
+        _id, 
         {
+            // DB에는 파일이아닌 파일 경로만 저장한다.
+            avatarUrl: (file ? file.path : avatartUrl),
             name: name,
             email: email,
             username: username,
@@ -236,7 +245,8 @@ export const postEdit = async (req, res) =>
         },
         {
             new: true
-        });
+        }
+    );
     req.session.user = updatedUser;
     return res.render("edit-profile");
 }
@@ -267,7 +277,15 @@ export const postChangePassword = async (req, res) =>
         }
     } = req;
     const user = await User.findById(_id);
+    if(user.password === null)
+    {
+        console.log("test1");
+        return res.redirect("/users/login");
+    }
+    console.log("test2");
+    
     const ok = await bcrypt.compare(oldPassword, user.password);
+
     if(!ok)
     {
         return res.status(400).render("users/change-password",
@@ -276,7 +294,7 @@ export const postChangePassword = async (req, res) =>
             errorMessage: "The current password is incorrect"
         });
     }
-    
+
 
     if(newPassword !== newPasswordConfirmation)
     {
@@ -292,9 +310,21 @@ export const postChangePassword = async (req, res) =>
     await user.save();
 
     return res.redirect("/users/logout");
+    
 }
 
-export const see = (req, res) =>
+
+export const see = async (req, res) =>
 {
-    res.send("See User");
+    const {id} = req.params;
+    const user = await User.findById(id).populate("videos");
+
+    if(!user)
+    {
+        return res.status(404).render("404", {pageTitle: "User not found."});
+    }
+    const videos = await Video.find({owner: user.id})
+    console.log(videos);
+
+    return res.render("profile", {pageTitle: user.name, user});
 }

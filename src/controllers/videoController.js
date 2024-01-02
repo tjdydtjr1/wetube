@@ -1,3 +1,4 @@
+import User from "../models/User";
 import Video from "../models/Video";
 
 // callback 방식
@@ -35,7 +36,8 @@ export const home = async(req, res) =>
 export const watch = async (req, res) =>
 {
     const {id} = req.params;
-    const video = await Video.findById(id);
+    const video = await Video.findById(id).populate("owner");
+
     if(!video)
     {
         return res.render("404", {pageTitle: "Video not found"});
@@ -46,17 +48,24 @@ export const watch = async (req, res) =>
 export const getEdit = async (req, res) =>
 {
     const {id} = req.params;
+    const {user: {_id}} = req.params;
     const video = await Video.findById(id);
     // 에러 예외 처리
     if(!video)
     {
         return res.status(404).render("404", {pageTitle: "Video not found"});
     }
+    if(String(video.owner) !== String(_id))
+    {
+        return res.status(403).redirect("/");
+    }
+
     return res.render("edit", {pageTitle: `Editing ${video.title}`, video});
 }
 
 export const postEdit = async (req, res) =>
 {
+    const {user: {_id}} = req.session;
     const {id} = req.params;
     const {title, description, hashtags} = req.body;
 
@@ -67,7 +76,10 @@ export const postEdit = async (req, res) =>
     {
         return res.status(404).render("404", {pageTitle: "Video not found"});
     }
-
+    if(String(video.owner) !== String(_id))
+    {
+        return res.status(403).redirect("/");
+    }
     await video.findByIdAndUpdate(id, 
         {
             title,
@@ -85,7 +97,12 @@ export const getUpload = (req, res) =>
 
 export const postUpload = async (req, res) =>
 {
+    const {user: {_id}} = req.session;
+    // 1. const file = req.file;
+    // 2. const {path: fileUrl} = req.file;
+    const {path: fileUrl} = req.file;
     const {title, description, hashtags} = req.body;
+
     try
     {
         await Video.create
@@ -93,22 +110,37 @@ export const postUpload = async (req, res) =>
             {
                 title,
                 description,
+                fileUrl,
+                owner: _id ,
                 hashtags : Video.formatHashtags(hashtags)
             }
         );
+        const user = await User.findById(_id);
+        user.videos.push(new Video._id);
+        user.save();
+
         return res.redirect("/");
     }
-    catch
+    catch(error)
     {
-        return res.status(400).render("upload", {pageTitle: "Upload Video", errorMessage: error._message});
+        return res.status(400).render("upload", {pageTitle: "Upload Video", errorMessage: error.message});
     }
 }
 
 export const deleteVideo = async(req, res) =>
 {
     const {id} = req.params;
-    console.log(id);
-
+    const {user: {_id}} = req.session;
+    const video = await Video.findById(id);
+    if(!video)
+    {
+        return res.status(404).render("404", {pageTitle: "Video not found."});
+    }
+    
+    if(String(video.owner) !== String(_id))
+    {
+        return res.status(403).redirect("/");
+    }
     await Video.findByIdAndDelete(id);
     //delete videos
     return res.redirect("/");

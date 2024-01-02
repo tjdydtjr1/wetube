@@ -14,10 +14,13 @@ html(lang= "ko")
                 if loggedIn
                     li 
                         a(href="/users/edit") Edit Profile
+                    li
+                        a(href= `/users/${loggedInUser._id}`) My Profile
                     li 
                         a(href="/users/logout") LogOut
                     li 
                         a(href="/videos/upload") Upload Video
+
                 else    
                     li 
                         a(href="/join") Join
@@ -30,3 +33,4 @@ html(lang= "ko")
         main
         block content
     include partials/footer.pug
+    script(src= "/assets/js/main.js")
