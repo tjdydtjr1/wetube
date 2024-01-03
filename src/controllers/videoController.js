@@ -22,15 +22,10 @@ import Video from "../models/Video";
 // try catch를 통한 에러 예외처리
 export const home = async(req, res) =>
 {
-    try
-    {
-        const videos = await Video.find({}).sort({createdAt: "desc"});
-        return res.render("home", {pageTitle: "Home", videos});
-    }
-    catch(error)
-    {
-        return res.render("server-error");
-    }
+    const videos = await Video.find({})
+    .sort({ createdAt: "desc" })
+    .populate("owner");
+  return res.render("home", { pageTitle: "Home", videos });
 }
 
 export const watch = async (req, res) =>
@@ -161,7 +156,7 @@ export const search = async(req, res) =>
                     $regex: new RegExp(`${keyword}$`, "i")
                 }
             }
-        )
+        ).populate("owner");
     }
     return res.render("search", {pageTitle: "Search", videos});
 }

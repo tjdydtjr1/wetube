@@ -1,6 +1,33 @@
-@import "./_variable";
+@import "./config/variables.scss";
+@import "./config/reset.scss";
 
-body
+// components
+@import "./components/header.scss";
+@import "./components/footer.scss";
+@import "./components/video.scss";
+@import "./components/shared.scss";
+@import "./components/forms.scss";
+@import "./components/social-login.scss";
+// screens
+@import "./screens/search.scss";
+@import "./screens/profile.scss";
+@import "./screens/edit-profile.scss";
+
+a
 {
-    background-color: $red;
+    color: inherit;
+    body
+    {
+        background-color: $bg;
+        color: white;        
+    }
+    
+}
+
+main 
+{
+    max-width: 1200px;
+    width: 100%;
+    margin: 0 auto;
+    margin-top: 50px;
 }

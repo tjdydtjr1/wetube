@@ -3,9 +3,8 @@ include mixins/video
 
 
 block content 
-    h2 Welcome
-    ul 
-        each video in videos 
-           +video(video)
-        else 
-            li Sorry
+   div.video-grid
+        each video in videos
+            +video(video)
+        else
+            span.empty__message No videos found

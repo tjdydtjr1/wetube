@@ -2,18 +2,33 @@
 const MiniCssExtractPlugin = require("mini-css-extract-plugin")
 const path = require("path");
 
-console.log(path.resolve(__dirname, ""));
 module.exports =
 {
     // 진입점
-    entry: "./src/client/js/main.js",
+    entry: 
+    {
+        main: "./src/client/js/main.js",
+        videoPlayer: "./src/client/js/videoPlayer.js"
+    },
     mode: "development",
-    plugins: [new MiniCssExtractPlugin()],
+    // 변경사항 재 컴파일
+    watch: true,
+    plugins: 
+    [
+        new MiniCssExtractPlugin
+        (
+            {
+                filename: "css/styles.css"
+            }
+        )
+    ],
     // 출력 위치 
     output:
     {
-        filename: "main.js",
-        path: path.resolve(__dirname, "assets", "js"),
+        filename: "js/[name].js",
+        path: path.resolve(__dirname, "assets"),
+        // 필요없는 파일 제거
+        clean: true
     },
     // 처리 방법 규칙
     module:
@@ -26,12 +41,13 @@ module.exports =
                 {
                     loader: "babel-loader",
                     options:
-                    {
+                    {   
                         presets:[["@babel/preset-env", {targets: "defaults"}]]
                     }
                 },
                 test: /\.scss$/,
-                use: ["MiniCssExtractPlugin.loader", "css-loader", "sass-loader"]
+                // 반대의 실행순서를 가짐
+                use: [MiniCssExtractPlugin.loader, "css-loader", "sass-loader"]
             }
         ]
     }
