@@ -8,7 +8,8 @@ module.exports =
     entry: 
     {
         main: "./src/client/js/main.js",
-        videoPlayer: "./src/client/js/videoPlayer.js"
+        videoPlayer: "./src/client/js/videoPlayer.js",
+        recorder: "./src/client/js/recorder.js"
     },
     mode: "development",
     // 변경사항 재 컴파일

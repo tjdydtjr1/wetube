@@ -11,7 +11,6 @@ export const getJoin = (req, res) =>
 
 export const postJoin = async (req, res) => 
 {
-    console.log(req.body);
     const {name, username, email, password1, password2, location} = req.body;
     const usernameExists = await User.exists({$or: [{username}, {email}]});
 
@@ -115,7 +114,6 @@ export const finishGithubLogin = async (req, res) =>
         client_secret: process.env.GH_SECRET,
         code: req.query.code
     }
-    console.log(config);
     const params = new URLSearchParams(config).toString();
     const finalUrl = `${baseUrl}?${params}`;
 
@@ -217,6 +215,8 @@ export const finishGithubLogin = async (req, res) =>
 export const logout = (req, res) =>
 {
     req.session.destroy();
+    // req.flash 알림 남길 수 있음
+    req.flash("info", "Bye Bye");
     return res.redirect("/");
 }
 
@@ -279,10 +279,8 @@ export const postChangePassword = async (req, res) =>
     const user = await User.findById(_id);
     if(user.password === null)
     {
-        console.log("test1");
         return res.redirect("/users/login");
     }
-    console.log("test2");
     
     const ok = await bcrypt.compare(oldPassword, user.password);
 
@@ -309,6 +307,7 @@ export const postChangePassword = async (req, res) =>
     // save pre
     await user.save();
 
+    req.flash("info", "Password Updated");
     return res.redirect("/users/logout");
     
 }
@@ -335,7 +334,6 @@ export const see = async (req, res) =>
         return res.status(404).render("404", {pageTitle: "User not found."});
     }
     const videos = await Video.find({owner: user.id})
-    console.log(videos);
 
     return res.render("profile", {pageTitle: user.name, user});
 }

@@ -19,6 +19,7 @@ export const protectorMiddleware = (req, res, next) =>
     }
     else
     {
+        req.flash("error", "Not authorized");
         return res.redirect("/login");
     }
 }
@@ -31,6 +32,7 @@ export const publicOnlyMiddleware = (req, res, next) =>
     }
     else
     {
+        req.flash("error", "Not authorized");
         return res.redirect("/");
     }
 }
@@ -49,6 +51,6 @@ export const videoUpload = multer(
     dest: "uploads/videos/", 
     limits: 
     {
-        fileSize: 10000000, 
+        fileSize: 100000000, 
     }
 });

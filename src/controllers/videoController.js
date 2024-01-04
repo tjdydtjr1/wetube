@@ -95,9 +95,11 @@ export const postUpload = async (req, res) =>
     const {user: {_id}} = req.session;
     // 1. const file = req.file;
     // 2. const {path: fileUrl} = req.file;
-    const {path: fileUrl} = req.file;
+    // 하나일 땐 req.file => 여러개는 files
+    const {video, thumb} = req.files;
     const {title, description, hashtags} = req.body;
 
+    console.log(thumb);
     try
     {
         await Video.create
@@ -105,8 +107,9 @@ export const postUpload = async (req, res) =>
             {
                 title,
                 description,
-                fileUrl,
-                owner: _id ,
+                fileUrl: video[0].path,
+                thumbUrl: thumb[0].path,
+                owner: _id,
                 hashtags : Video.formatHashtags(hashtags)
             }
         );
@@ -161,3 +164,18 @@ export const search = async(req, res) =>
     return res.render("search", {pageTitle: "Search", videos});
 }
 
+export const registerView = async (req, res) =>
+{
+    const {id} = req.params;
+    const video = await Video.findById(id);
+    
+    if(!video)
+    {
+        // status만 보내면 상태 코드만 보냄
+        // sendStatus 상태 코드와 연결을 끝냄
+        return res.sendStatus(404)
+    }
+    video.meta.views = video.meta.views + 1;
+    await video.save();
+    return res.sendStatus(200);
+}

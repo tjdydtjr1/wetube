@@ -15,10 +15,10 @@ header
                     a(href="/users/logout") LogOut
                 li 
                     a(href="/videos/upload") Upload Video
-                        if loggedInUser.avatarUrl === ""
+                        if !loggedInUser.avatarUrl
                             span 😒
                         else 
-                            img.header__avatar(src="/" + loggendInUser.avataUrl)
+                            img.header__avatar(src="/" + loggedInUser.avatarUrl)
 
             else    
                 li

@@ -2,6 +2,7 @@ require("dotenv").config();
 import "./db"
 import "./models/Video";
 import express from "express";
+import flash from "express-flash"
 import morgan from "morgan";
 import session from "express-session";
 import MongoStore from "connect-mongo";
@@ -9,6 +10,7 @@ import rootRouter from "./routers/rootRouter";
 import userRouter from "./routers/userRouter";
 import videoRouter from "./routers/videoRouter";
 import { localsMiddleware } from "./middlewares";
+import apiRouter from "./routers/apiRouter";
 
 
 
@@ -52,7 +54,8 @@ app.use((req, res, next) =>
     })
 })
 
-
+// express-flash 설치시 req,flash 사용가능
+app.use(flash());
 // 경로에 올 시 라우터 실행
 app.use(localsMiddleware);
 app.use("/", rootRouter);
@@ -60,6 +63,7 @@ app.use("/uploads", express.static("uploads"));
 app.use("/static", express.static("assets"));
 app.use("/videos", videoRouter);
 app.use("/users", userRouter);
+app.use("/api", apiRouter);
 
 export default app;
 
