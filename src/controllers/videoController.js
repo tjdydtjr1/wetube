@@ -1,5 +1,7 @@
 import User from "../models/User";
 import Video from "../models/Video";
+import Comment from "../models/Comment";
+
 
 // callback 방식
 // export const home = (req, res) => 
@@ -31,7 +33,7 @@ export const home = async(req, res) =>
 export const watch = async (req, res) =>
 {
     const {id} = req.params;
-    const video = await Video.findById(id).populate("owner");
+    const video = await Video.findById(id).populate("owner").populate("comments");
 
     if(!video)
     {
@@ -99,7 +101,6 @@ export const postUpload = async (req, res) =>
     const {video, thumb} = req.files;
     const {title, description, hashtags} = req.body;
 
-    console.log(thumb);
     try
     {
         await Video.create
@@ -179,3 +180,42 @@ export const registerView = async (req, res) =>
     await video.save();
     return res.sendStatus(200);
 }
+
+export const createComment = async (req, res) =>
+{
+    const {id} = req.params;
+    const {text} = req.body;
+    const {user} = req.session;
+
+    const video = await Video.findById(id);
+
+    if(!video)
+    {
+        return res.sendStatus(404);
+    }
+
+    // comment 생성
+    const comment = await Comment.create
+    (
+        {
+            text: text,
+            owner: user._id,
+            video: id
+        }
+    );
+
+    video.comments.push(comment._id);
+    video.save();
+    // 성공하고 리소스 생성 코드 201, comment를 단 ID
+    return res.status(201).json({newCommentId : comment._id});
+}
+
+export const deleteComment = async (req, res) => 
+{
+    const deleteCommentId = req.params;
+
+    const userId = await User.findById(deleteCommentId);
+    console.log(userId);
+
+    return res.sendStatus(200);
+};

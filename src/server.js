@@ -28,7 +28,16 @@ app.set("view engine", "pug");
 
 // pug 폴더 설정법
 app.set("views", process.cwd() + "/src/views");
+
+// 상태 코드 
 app.use(logger);
+
+// text를 이해하기 위해 사용함 req.body에 text도 담기게 됨
+// app.use(express.text()); -> string으로만 변환해줌   => JSON.stringify(string 변환할 오브젝트)
+// text가 아닌 json을 사용하면 string을 json으로 변환까지 해줌 => JSON.parse(string 변환된 것)
+app.use(express.json());
+
+
 app.use(express.urlencoded({extended: true}));
 
 // 세션은 Route 전에
@@ -39,7 +48,7 @@ app.use(session(
         saveUninitialized: false,
         cookie: 
         {
-            maxAge: 20000,
+            maxAge: 2000000000,
         },
         store: MongoStore.create({mongoUrl: process.env.DB_URL})
     }

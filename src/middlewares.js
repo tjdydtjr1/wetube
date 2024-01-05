@@ -9,8 +9,6 @@ export const localsMiddleware = (req, res, next) =>
     return next();
 }
 
-
-
 export const protectorMiddleware = (req, res, next) =>
 {
     if(req.session.loggedIn)

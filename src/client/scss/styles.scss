@@ -13,6 +13,7 @@
 @import "./screens/profile.scss";
 @import "./screens/edit-profile.scss";
 @import "./screens/upload.scss";
+@import "./screens/watch.scss";
 
 a
 {
@@ -20,7 +21,7 @@ a
     body
     {
         background-color: $bg;
-        color: white;        
+        color: black;        
     }
     
 }
